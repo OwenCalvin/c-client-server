@@ -1,0 +1,73 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug HTTP client",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/client-http/build/client",
+      "args": ["gandalf.teleinf.labinfo.eiaj.ch", "80"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "client-http"
+    },
+    {
+      "name": "Debug client (client-server-udp)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/client-server-udp/build/client",
+      "args": ["localhost", "3000"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "client client-server-udp"
+    },
+    {
+      "name": "Debug server (client-server-udp)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/client-server-udp/build/server",
+      "args": ["3000"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "server client-server-udp"
+    },
+    {
+      "name": "Debug client (client-server-tcp)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/client-server-tcp/build/client",
+      "args": ["127.0.0.1", "3000"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "client client-server-tcp"
+    },
+    {
+      "name": "Debug server (client-server-tcp)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/client-server-tcp/build/server",
+      "args": ["3002"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "server client-server-tcp"
+    }
+  ]
+}

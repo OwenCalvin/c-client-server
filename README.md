@@ -9,7 +9,7 @@ $ ./server 4000
 $ ./client 127.0.0.1 4000
 $ make clean
 ```  
-Just type some stuff inside the client console, it will be displayed on the server's one
+Just type some stuff inside the client console and press enter, it will be displayed on the server's one
 
 # client-server-udp
 ```bash
@@ -19,7 +19,7 @@ $ ./server 4000
 $ ./client 127.0.0.1 4000
 $ make clean
 ```  
-Just type some stuff inside the client console, it will be displayed on the server's one
+Just type some stuff inside the client console and press enter, it will be displayed on the server's one
 
 # client-http
 An example to create a HTTP requester (or any other protocol)

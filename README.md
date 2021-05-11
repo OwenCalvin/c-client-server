@@ -30,6 +30,9 @@ $ make test
 $ make clean
 ```
 
+# Environnement
+Tested on Unix based system (Mac OS)
+
 # The project
 **Networking school group:**
 - [Owen Gombas](https://github.com/OwenCalvin)

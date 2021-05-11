@@ -27,7 +27,12 @@ int main(int argc, char **argv)
         {
             char buffer[1024];
 
-            fputs("GET / HTTP/1.1\r\nHost: gandalf.teleinf.labinfo.eiaj.ch\r\n\r\n", f);
+            printf("=========================================\n", argv[1]);
+            printf("GET / HTTP/1.1\nHost: %s\n", argv[1]);
+            printf("=========================================\n\n", argv[1]);
+
+            fprintf(f, "GET / HTTP/1.1\r\nHost: %s\r\n\r\n", argv[1]);
+
             while (1)
             {
                 char *res = fgets(buffer, sizeof(buffer), f);

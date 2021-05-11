@@ -22,7 +22,4 @@ An example to create a HTTP requester (or any other protocol)
 ```bash
 $ cd client-http
 $ clang client.c -o build/client && ./build/client gandalf.teleinf.labinfo.eiaj.ch 80
-```  
-
-# Index
-TODO
+```

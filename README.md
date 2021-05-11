@@ -25,7 +25,7 @@ $ clang client.c -o build/client && ./build/client gandalf.teleinf.labinfo.eiaj.
 ```
 
 # The project
-**Networking school group**
+**Networking school group:**
 - [Owen Gombas](https://github.com/OwenCalvin)
 - [David Darmanger](https://github.com/darmangerd)
 - [Clément Brigliano](https://github.com/clms0u)

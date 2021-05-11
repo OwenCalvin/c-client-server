@@ -40,6 +40,6 @@ Tested on Unix based system (Mac OS)
 - [Clément Brigliano](https://github.com/clms0u)
 
 # See also
-[makefiletutorial.com](https://makefiletutorial.com)
-[getaddrinfo(3)](https://man7.org/linux/man-pages/man3/getaddrinfo.3.html)
-[tcp-server-client-implementation-in-c](https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/)
+- [makefiletutorial.com](https://makefiletutorial.com)
+- [getaddrinfo(3)](https://man7.org/linux/man-pages/man3/getaddrinfo.3.html)
+- [tcp-server-client-implementation-in-c](https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/)

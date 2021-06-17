@@ -92,6 +92,8 @@ int main(int argc, char **argv) {
     FILE *f = tcp_connect(arg_hostname, arg_port);
 
     if (f != NULL) {
+      printf("Sending email...\n");
+
       char buffer[1024] = "";
 
       char helo[MAX_FIELD_LENGTH] = "HELO me";
@@ -104,8 +106,6 @@ int main(int argc, char **argv) {
       char *content = read_file(arg_path);
       char dot[MAX_FIELD_LENGTH] = ".";
       char quit[MAX_FIELD_LENGTH] = "QUIT";
-
-      printf("Sending email...\n");
 
       sprintf(helo, "%s" SEPARATOR, helo);
       sprintf(mail_from, "MAIL FROM: %s" SEPARATOR, arg_exp);

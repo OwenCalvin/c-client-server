@@ -68,6 +68,19 @@
       "externalConsole": false,
       "MIMode": "lldb",
       "preLaunchTask": "server client-server-tcp"
+    },
+    {
+      "name": "Debug SMTP (client-smtp)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/client-smtp/client",
+      "args": ["test3@test.com", "test", "content.txt", "smtp.alphanet.ch", "test@alphanet.ch", "587"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "client client-smtp"
     }
   ]
 }

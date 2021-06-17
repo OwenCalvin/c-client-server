@@ -40,7 +40,7 @@ char *read_file(char *path) {
   return buffer;
 }
 
-void verify_error_code(char *buffer) {
+int verify_error_code(char *buffer) {
   char code[4];
   strncpy(code, buffer, 3);
   code[3] = 0;
@@ -49,21 +49,25 @@ void verify_error_code(char *buffer) {
 
   printf("%s\r\n", buffer);
 
+  // Greylisting
+  if (strcmp(code, "450") == 0) {
+    printf("450: You are greylisted, ");
+    return 2;
+  }
+
   switch (error_subject) {
   case '2':
     // printf("Success... (%s)\r\n", code);
-    return;
-
   case '3':
     // printf("Waiting for more informations... (%s)\r\n", code);
-    return;
+    return 0;
 
   case '5':
-    printf("Server error: %s\r\n", code);
+    printf("5xx Permanent failure: %s\r\n", code);
     break;
 
   case '4':
-    printf("Client error: %s\r\n", code);
+    printf("4xx Temporary failure: %s\r\n", code);
     break;
 
   default:
@@ -71,11 +75,12 @@ void verify_error_code(char *buffer) {
     break;
   }
 
-  exit(1);
+  return 1;
 }
 
 int main(int argc, char **argv) {
   int result = EXIT_FAILURE;
+  int error = 0;
 
   char *arg_exp = argv[1];
   char *arg_subject = argv[2];
@@ -134,17 +139,31 @@ int main(int argc, char **argv) {
           buffer[strlen(buffer) - 1] = '\0';
         }
 
-        verify_error_code(buffer);
+        error = verify_error_code(buffer);
+
+        if (error > 0) {
+          break;
+        }
       }
 
       shutdown(fileno(f), SHUT_WR);
 
       if (fclose(f) == 0) {
         f = NULL;
-
         result = EXIT_SUCCESS;
       } else {
         perror("fclose(): failed: ");
+      }
+
+      if (error > 0) {
+        result = EXIT_FAILURE;
+
+        if (error == 2) {
+          int minutes = 15;
+          printf("we will retry in %d minutes...\r\n", minutes);
+          sleep(60 * minutes);
+          return main(argc, argv);
+        }
       }
     }
   } else {
@@ -155,36 +174,56 @@ int main(int argc, char **argv) {
   return result;
 }
 
-static FILE *tcp_connect(const char *hostname, const char *str_port) {
+static FILE *tcp_connect(const char *hostname, const char *port) {
   FILE *f = NULL;
 
-  unsigned short port = (unsigned short)atoi(str_port);
-  struct sockaddr_in client, server;
-  int s, ns;
+  int s;
+  struct addrinfo hints;
+  struct addrinfo *result, *rp;
 
-  // Get a socket for accepting connections
-  s = socket(AF_INET, SOCK_STREAM, 0);
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = 0;
+  hints.ai_protocol = 0;
 
-  if (s < 0) {
-    perror("Socket()");
-    exit(0);
+  if ((s = getaddrinfo(hostname, port, &hints, &result))) {
+    fprintf(stderr, "getaddrinfo(): failed: %s.\n", gai_strerror(s));
   } else {
-    printf("Socket created\n");
+    for (rp = result; rp != NULL; rp = rp->ai_next) {
+      char ipname[INET6_ADDRSTRLEN];
+      char servicename[6];
+
+      if ((s = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) == -1) {
+        perror("socket() failed: ");
+        continue;
+      }
+
+      if (!getnameinfo(rp->ai_addr, rp->ai_addrlen, ipname, sizeof(ipname),
+                       servicename, sizeof(servicename),
+                       NI_NUMERICHOST | NI_NUMERICSERV)) {
+        printf("Essai de connection vers host %s:%s ...\n", ipname,
+               servicename);
+      }
+
+      if (connect(s, rp->ai_addr, rp->ai_addrlen) != -1) {
+        break;
+      } else {
+        perror("connect()");
+      }
+
+      close(s);
+    }
+
+    freeaddrinfo(result);
+
+    if (rp == NULL) {
+      fprintf(stderr, "Could not connect.\n");
+    } else {
+      if (!(f = fdopen(s, "r+"))) {
+        close(s);
+        perror("fdopen() failed: ");
+      }
+    }
   }
-
-  // Bind the socket to the server address
-  server.sin_family = AF_INET;
-  server.sin_addr.s_addr = inet_addr(hostname);
-  server.sin_port = htons(port);
-
-  if (connect(s, (struct sockaddr *)&server, sizeof(server)) != 0) {
-    perror("Connect()");
-    exit(1);
-  } else {
-    printf("Connected to %s:%s\n", hostname, str_port);
-  }
-
-  f = fdopen(s, "r+");
-
   return f;
 }

@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 
   char *arg_exp = argv[1];
   char *arg_subject = argv[2];
-  char *arg_message = argv[3];
+  char *arg_path = argv[3];
   char *arg_hostname = argv[4];
   char *arg_to = argv[5];
   char *arg_port = "25";
@@ -94,8 +94,6 @@ int main(int argc, char **argv) {
     if (f != NULL) {
       char buffer[1024] = "";
 
-      read_file("content.txt");
-
       char helo[MAX_FIELD_LENGTH] = "HELO me";
       char mail_from[MAX_FIELD_LENGTH] = "";
       char rcpt_to[MAX_FIELD_LENGTH] = "";
@@ -103,7 +101,7 @@ int main(int argc, char **argv) {
       char from[MAX_FIELD_LENGTH] = "";
       char subject[MAX_FIELD_LENGTH] = "";
       char to[MAX_FIELD_LENGTH] = "";
-      char *content = read_file("content.txt");
+      char *content = read_file(arg_path);
       char dot[MAX_FIELD_LENGTH] = ".";
       char quit[MAX_FIELD_LENGTH] = "QUIT";
 

@@ -8,17 +8,37 @@
 #include <unistd.h>
 
 #define SEPARATOR "\r\n"
+#define MAX_FIELD_LENGTH 256
 
 static FILE *tcp_connect(const char *hostname, const char *str_port);
 
 /*
-- e-mail expéditeur,
-- sujet du message (entre guillemets si multi-mots, cf bash)
-- nom de fichier du corps du message
-- nom de domaine DNS ou adresse IP du serveur de mail à utiliser
-- e-mail destinataire
-- argument optionnel: numéro de port (par défaut 25)
+- OK: e-mail expéditeur,
+- OK: sujet du message (entre guillemets si multi-mots, cf bash)
+- OK: nom de fichier du corps du message
+- OK: nom de domaine DNS ou adresse IP du serveur de mail à utiliser
+- OK: e-mail destinataire
+- OK: argument optionnel: numéro de port (par défaut 25)
 */
+
+char *read_file(char *path) {
+  char *buffer = 0;
+  long length;
+  FILE *f = fopen(path, "rb");
+
+  if (f) {
+    fseek(f, 0, SEEK_END);
+    length = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    buffer = malloc(length);
+    if (buffer) {
+      fread(buffer, 1, length, f);
+    }
+    fclose(f);
+  }
+
+  return buffer;
+}
 
 int main(int argc, char **argv) {
   int result = EXIT_FAILURE;
@@ -28,24 +48,30 @@ int main(int argc, char **argv) {
   char *arg_message = argv[3];
   char *arg_hostname = argv[4];
   char *arg_to = argv[5];
-  char *arg_port = argv[6];
+  char *arg_port = "25";
 
-  if (argc >= 0) {
+  if (argv[6] != 0) {
+    arg_port = argv[6];
+  }
+
+  if (argc >= 6) {
     FILE *f = tcp_connect(arg_hostname, arg_port);
 
     if (f != NULL) {
       char buffer[1024] = "";
 
-      char helo[256] = "HELO me";
-      char mail_from[256] = "";
-      char rcpt_to[256] = "";
-      char data[256] = "DATA";
-      char from[256] = "";
-      char subject[256] = "";
-      char to[256] = "";
-      char content[256] = "hello world";
-      char dot[256] = ".";
-      char quit[256] = "QUIT";
+      read_file("content.txt");
+
+      char helo[MAX_FIELD_LENGTH] = "HELO me";
+      char mail_from[MAX_FIELD_LENGTH] = "";
+      char rcpt_to[MAX_FIELD_LENGTH] = "";
+      char data[MAX_FIELD_LENGTH] = "DATA";
+      char from[MAX_FIELD_LENGTH] = "";
+      char subject[MAX_FIELD_LENGTH] = "";
+      char to[MAX_FIELD_LENGTH] = "";
+      char *content = read_file("content.txt");
+      char dot[MAX_FIELD_LENGTH] = ".";
+      char quit[MAX_FIELD_LENGTH] = "QUIT";
 
       printf("Sending email...\n");
 

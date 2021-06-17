@@ -13,7 +13,7 @@
 static FILE *tcp_connect(const char *hostname, const char *str_port);
 
 /*
-- OK: e-mail expéditeur,
+- OK: e-mail expéditeur
 - OK: sujet du message (entre guillemets si multi-mots, cf bash)
 - OK: nom de fichier du corps du message
 - OK: nom de domaine DNS ou adresse IP du serveur de mail à utiliser
@@ -38,6 +38,40 @@ char *read_file(char *path) {
   }
 
   return buffer;
+}
+
+void verify_error_code(char *buffer) {
+  char code[4];
+  strncpy(code, buffer, 3);
+  code[3] = 0;
+
+  char error_subject = code[0];
+
+  printf("%s\r\n", buffer);
+
+  switch (error_subject) {
+  case '2':
+    // printf("Success... (%s)\r\n", code);
+    return;
+
+  case '3':
+    // printf("Waiting for more informations... (%s)\r\n", code);
+    return;
+
+  case '5':
+    printf("Server error: %s\r\n", code);
+    break;
+
+  case '4':
+    printf("Client error: %s\r\n", code);
+    break;
+
+  default:
+    printf("Unknow error: %s\r\n", code);
+    break;
+  }
+
+  exit(1);
 }
 
 int main(int argc, char **argv) {
@@ -101,7 +135,8 @@ int main(int argc, char **argv) {
         if (strlen(buffer) > 0) {
           buffer[strlen(buffer) - 1] = '\0';
         }
-        puts(buffer);
+
+        verify_error_code(buffer);
       }
 
       shutdown(fileno(f), SHUT_WR);

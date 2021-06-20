@@ -1,4 +1,9 @@
 # Rapport du client SMTP en C
+**20.06.2021**  
+**ISC1c**
+- [Owen Gombas](https://github.com/OwenCalvin)
+- [David Darmanger](https://github.com/darmangerd)
+- [Clément Brigliano](https://github.com/clms0u)
 
 ## Objectifs du rapport
 - ✅ Tests documentés sur `netcat`, `smtprel.he-arc.ch` et `smtp.alphanet.ch` (minimum: copie d'écran)
@@ -316,8 +321,3 @@ Il retourne un `FILE *` qui représente la connexion au serveur, on peut alors u
 
 # Schéma de l'automate
 ![](images/automate.jpg)
-
-# Contributeurs
-- [Owen Gombas](https://github.com/OwenCalvin)
-- [David Darmanger](https://github.com/darmangerd)
-- [Clément Brigliano](https://github.com/clms0u)

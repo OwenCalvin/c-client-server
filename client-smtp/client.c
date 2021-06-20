@@ -18,6 +18,7 @@ void send_command(FILE *f, int index, char **argv);
 /**
  * Read the content of a file
  * @param path The file path
+ * @return The content of the file as a string
  */
 char *read_file(char *path) {
   char *buffer = 0;
@@ -127,6 +128,12 @@ void get_command(char *dest[2], int index, char **argv) {
   dest[1] = commands[index][1];
 }
 
+/**
+ * Send a SMTP command to the server and print it in the terminal
+ * @param f The file that represent the connection to the server
+ * @param index The SMTP command index
+ * @param argv The argv of the program
+ */
 void send_command(FILE *f, int index, char **argv) {
   char *command[2];
   get_command(command, index, argv);
@@ -154,8 +161,8 @@ int main(int argc, char **argv) {
       char buffer[1024] = "";
 
       // Send the first command HELO me
-      int commandIndex = 0;
-      send_command(f, commandIndex, argv);
+      int command_index = 0;
+      send_command(f, command_index, argv);
 
       while (fgets(buffer, sizeof(buffer), f)) {
         if (strlen(buffer) > 0) {
@@ -171,11 +178,11 @@ int main(int argc, char **argv) {
         case 354: {
           int is_not_dot = 1;
           while (is_not_dot) {
-            commandIndex++;
-            send_command(f, commandIndex, argv);
+            command_index++;
+            send_command(f, command_index, argv);
 
             char *command[2];
-            get_command(command, commandIndex, argv);
+            get_command(command, command_index, argv);
             is_not_dot = strcmp(command[1], ".") != 0;
           }
           break;
@@ -184,8 +191,8 @@ int main(int argc, char **argv) {
         // Treat normal case with error code 250 or 220
         case 220:
         case 250:
-          commandIndex++;
-          send_command(f, commandIndex, argv);
+          command_index++;
+          send_command(f, command_index, argv);
           break;
 
         // Break the loop for all these error code
@@ -236,6 +243,13 @@ int main(int argc, char **argv) {
   return result;
 }
 
+/**
+ * Connect to a server using TCP
+ * @param hostname The hostname of the server (localhost, smtp.alphanet.ch, ...)
+ * @param port The port number to connect (as a string)
+ * @return It returns a FILE *, you can send datas to the server by using
+ * functions that are made for files
+ */
 static FILE *tcp_connect(const char *hostname, const char *port) {
   FILE *f = NULL;
 

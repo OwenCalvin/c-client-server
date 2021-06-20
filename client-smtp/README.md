@@ -313,5 +313,11 @@ Il retourne un `FILE *` qui représente la connexion au serveur, on peut alors u
       2. **Si** on a un code **221** on "close" la connexion
       3. etc... (A voir dans le switch du code)
 3. On a la confirmation du serveur que l'email est bien envoyé on peut alors fermer proprement la connexion
+
 # Schéma de l'automate
 ![](images/automate.jpg)
+
+# Contributeurs
+- [Owen Gombas](https://github.com/OwenCalvin)
+- [David Darmanger](https://github.com/darmangerd)
+- [Clément Brigliano](https://github.com/clms0u)

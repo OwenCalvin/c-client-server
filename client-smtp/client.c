@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #define SEPARATOR "\r\n"
-#define MAX_FIELD_LENGTH 256
 
 static FILE *tcp_connect(const char *hostname, const char *str_port);
 
@@ -49,44 +48,80 @@ int verify_error_code(char *buffer) {
 
   printf("%s\r\n", buffer);
 
-  // Greylisting
-  if (strcmp(code, "450") == 0) {
-    printf("450: You are greylisted, ");
-    return 2;
-  }
-
   switch (error_subject) {
   case '2':
+    if (strcmp(code, "221") == 0)
+      return atoi(code);
     // printf("Success... (%s)\r\n", code);
+    return 2;
+
   case '3':
     // printf("Waiting for more informations... (%s)\r\n", code);
-    return 0;
+    if (strcmp(code, "354") == 0)
+      return atoi(code);
+    return 3;
+
+  case '4':
+    // Greylisting
+    if (strcmp(code, "450") == 0)
+      return atoi(code);
+    printf("4xx Temporary failure: %s\r\n", code);
+    return 4;
 
   case '5':
     printf("5xx Permanent failure: %s\r\n", code);
-    break;
-
-  case '4':
-    printf("4xx Temporary failure: %s\r\n", code);
-    break;
+    return 5;
 
   default:
     printf("Unknow error: %s\r\n", code);
-    break;
+    return 6;
   }
+}
 
-  return 1;
+void get_command(char *dest[2], int index, char **argv) {
+  char *arg_exp = argv[1];
+  char *arg_subject = argv[2];
+  char *arg_path = argv[3];
+  char *arg_to = argv[5];
+
+  char *helo = "HELO me";
+  char *mail_from = "";
+  char *rcpt_to = "";
+  char *data = "DATA";
+  char *from = "";
+  char *subject = "";
+  char *to = "";
+  char *content = read_file(arg_path);
+  char *dot = ".";
+  char *quit = "QUIT";
+
+  char *commands[][2] = {{"%s" SEPARATOR, helo},
+                         {"MAIL FROM: %s" SEPARATOR, arg_exp},
+                         {"RCPT TO: %s" SEPARATOR, arg_to},
+                         {"%s" SEPARATOR, data},
+                         {"Subject: %s" SEPARATOR, arg_subject},
+                         {"From: <%s>" SEPARATOR, arg_exp},
+                         {"To: %s" SEPARATOR, arg_to},
+                         {"%s" SEPARATOR, content},
+                         {"%s" SEPARATOR, dot},
+                         {"%s" SEPARATOR, quit}};
+
+  dest[0] = commands[index][0];
+  dest[1] = commands[index][1];
+}
+
+void send_command(FILE *f, int index, char **argv) {
+  char *command[2];
+  get_command(command, index, argv);
+  fprintf(stdout, command[0], command[1]);
+  fprintf(f, command[0], command[1]);
 }
 
 int main(int argc, char **argv) {
   int result = EXIT_FAILURE;
   int error = 0;
 
-  char *arg_exp = argv[1];
-  char *arg_subject = argv[2];
-  char *arg_path = argv[3];
   char *arg_hostname = argv[4];
-  char *arg_to = argv[5];
   char *arg_port = "25";
 
   if (argv[6] != 0) {
@@ -101,47 +136,46 @@ int main(int argc, char **argv) {
 
       char buffer[1024] = "";
 
-      char helo[MAX_FIELD_LENGTH] = "HELO me";
-      char mail_from[MAX_FIELD_LENGTH] = "";
-      char rcpt_to[MAX_FIELD_LENGTH] = "";
-      char data[MAX_FIELD_LENGTH] = "DATA";
-      char from[MAX_FIELD_LENGTH] = "";
-      char subject[MAX_FIELD_LENGTH] = "";
-      char to[MAX_FIELD_LENGTH] = "";
-      char *content = read_file(arg_path);
-      char dot[MAX_FIELD_LENGTH] = ".";
-      char quit[MAX_FIELD_LENGTH] = "QUIT";
-
-      sprintf(helo, "%s" SEPARATOR, helo);
-      sprintf(mail_from, "MAIL FROM: %s" SEPARATOR, arg_exp);
-      sprintf(rcpt_to, "RCPT TO: %s" SEPARATOR, arg_to);
-      sprintf(data, "%s" SEPARATOR, data);
-      sprintf(subject, "Subject: %s" SEPARATOR, arg_subject);
-      sprintf(from, "From: <%s>" SEPARATOR, arg_exp);
-      sprintf(to, "To: %s" SEPARATOR, arg_to);
-      sprintf(content, "%s" SEPARATOR, content);
-      sprintf(dot, "%s" SEPARATOR, dot);
-      sprintf(quit, "%s" SEPARATOR, quit);
-
-      fputs(helo, f);
-      fputs(mail_from, f);
-      fputs(rcpt_to, f);
-      fputs(data, f);
-      fputs(subject, f);
-      fputs(from, f);
-      fputs(to, f);
-      fputs(content, f);
-      fputs(dot, f);
-      fputs(quit, f);
-
+      int commandIndex = 0;
+      send_command(f, commandIndex, argv);
       while (fgets(buffer, sizeof(buffer), f)) {
         if (strlen(buffer) > 0) {
           buffer[strlen(buffer) - 1] = '\0';
         }
 
         error = verify_error_code(buffer);
+        int break_loop = 0;
 
-        if (error > 0) {
+        switch (error) {
+        case 354: {
+          int is_not_dot = 1;
+          while (is_not_dot) {
+            commandIndex++;
+            send_command(f, commandIndex, argv);
+
+            char *command[2];
+            get_command(command, commandIndex, argv);
+            is_not_dot = strcmp(command[1], ".") != 0;
+          }
+          break;
+        }
+
+        case 2:
+          commandIndex++;
+          send_command(f, commandIndex, argv);
+          break;
+
+        case 221:
+        case 450:
+        case 4:
+        case 5:
+        case 6:
+        default:
+          break_loop = 1;
+          break;
+        }
+
+        if (break_loop) {
           break;
         }
       }
@@ -155,10 +189,10 @@ int main(int argc, char **argv) {
         perror("fclose(): failed: ");
       }
 
-      if (error > 0) {
+      if (error > 3) {
         result = EXIT_FAILURE;
 
-        if (error == 2) {
+        if (error == 450) {
           int minutes = 15;
           printf("we will retry in %d minutes...\r\n", minutes);
           sleep(60 * minutes);

@@ -30,6 +30,9 @@ $ make test
 $ make clean
 ```
 
+# client-smtp
+A simple SMTP client
+
 # Environnement
 Tested on Unix based system (Mac OS)
 

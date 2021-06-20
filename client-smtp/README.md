@@ -5,14 +5,14 @@
 
 - ✅ Une documentation utilisateur très simplifiée (comment utiliser votre programme)
 
-- ❌ Le scan d'un dessin d'automate simplifié
+- ✅ Le scan d'un dessin d'automate simplifié
 
 - ✅ Une explication dans les grandes lignes de la structure du logiciel (fonctions, structures de données), y compris la notion d'automate
 
 - ✅ Une documentation simple de génération du logiciel (comment vous compilez le logiciel, peut être une seule ligne!)
 
 # Compiler le programme et comment l'utiliser
-Un Makefile est fournit il vous suffit d'éxecuter la commande suivante:
+Un Makefile est fourni il vous suffit d'exéecuter la commande suivante:
 
 ```
 make
@@ -20,7 +20,7 @@ make
 
 Un binaire `client` est alors généré, vous pouvez l'exécuter avec les arguments suivant:
 1. Adresse email de l'expéditeur
-2. Le sujet du mail (entre guillemets si il contient des espaces)
+2. Le sujet du mail (entre guillemets s'il contient des espaces)
 3. Le chemin du fichier contenant le texte de l'email
 4. L'adresse du serveur de mail
 5. L'adresse email de destination
@@ -109,7 +109,7 @@ ou
 ```
 
 ## 1. Initialisation
-Ici l'on peut déjà deviner que le NVT fonctionne car le client envoie uniquement la première ligne au serveur et attend qu'il réponde pour continuer
+Ici l'on peut déjà deviner que le NVT fonctionne, car le client envoie uniquement la première ligne au serveur et attend qu'il réponde pour continuer
 
 ![](images/netcat-1.png)
 ![](images/netcat-2.png)
@@ -123,7 +123,7 @@ On a la confirmation que le NVT fonctionne car après avoir répondu dans le ter
 ![](images/netcat-4.png)
 
 ## 3. Envoie de toutes le lignes jusqu'à la fin
-On vous simplifie toutes les réponse qu'on a écrit à la main mais voici à quoi ressemble le dialogue client serveur jusqu'à la fin de la connexion
+On vous simplifie toutes les réponses qu'on a écrites à la main, mais voici à quoi ressemble le dialogue client serveur jusqu'à la fin de la connexion
 
 > Le cas du DATA est bien pris en compte jusqu'au point
 
@@ -138,7 +138,7 @@ $ ./client test@test.com "test" content.txt smtprel.he-arc.ch VOTRE@ADRESSE.EMAI
 
 ou
 
-*Remplacer l'adresse email par la votre dans le script*
+*Remplacez l'adresse email par la vôtre dans le script*
 ```
 ./he-arc.ch
 ```
@@ -146,7 +146,7 @@ ou
 ![](images/he-arc-1.png)
 ![](images/he-arc-2.png)
 
-L'envoie de l'email se déroule comme prévu (avec le NVT), aucun problème.
+L'envoi de l'email se déroule comme prévu (avec le NVT), aucun problème.
 
 # Test avec le serveur `smtp.alphanet.ch`
 ```
@@ -161,13 +161,13 @@ ou
 
 > On remplace le port 25 par 587 ici
 
-**Ici on prend en charge le cas d'une erreur 450 de grey-listing, le programme ferme la connexion et réessai dans 15 minutes**
+**Ici on prend en charge le cas d'une erreur 450 de grey-listing, le programme ferme la connexion et réessaie dans 15 minutes**
 ![](images/alphanet-1.png)
 
-**Après 15 minutes d'attente le programme réessai d'envoyer le mail et ça fonctionne**
+**Après 15 minutes d'attente le programme réessaie d'envoyer le mail et ça fonctionne**
 ![](images/alphanet-2.png)
 
-**Désormais, si l'on réessai directement, l'adresse test@test.ch ne devrait plus être greylistée et on ne devrait pas devoir attendre. C'est bien le cas**
+**Désormais, si l'on réessaie directement, l'adresse test@test.ch ne devrait plus être greylistée et on ne devrait pas devoir attendre. C'est bien le cas**
 ![](images/alphanet-3.png)
 
 # Documentation du code
@@ -275,7 +275,7 @@ La fonctionne retourne via `dest`, la paire format-variable à envoyer pour un c
 
 
 ### `void send_command(FILE *f, int index, char **argv)`
-Envoie la commande situé à l'indice *n* (index) au serveur SMTP et l'affiche dans la console
+Envoie la commande situés à l'indice *n* (index) au serveur SMTP et l'affiche dans la console
 
 #### Paramètres
 - **f**  
@@ -302,7 +302,7 @@ Se connecte à un serveur en TCP
   Le numéro de port auquel on ve se connecter (char *)
 
 #### Retourne
-Il retourne un `FILE *` qui représente la connexion au serveur, on peut alors utilisé toutes les fonctions destinées au fichiers afin d'envoyer et recevoir des informations avec le serveur
+Il retourne un `FILE *` qui représente la connexion au serveur, on peut alors utiliser toutes les fonctions destinées aux fichiers afin d'envoyer et recevoir des informations avec le serveur
 
 # Schéma de l'automate
 ![](images/automate.jpg)

@@ -10,16 +10,15 @@
 #define SEPARATOR "\r\n"
 
 static FILE *tcp_connect(const char *hostname, const char *str_port);
+int parse_error_code(char *buffer);
+char *read_file(char *path);
+void get_command(char *dest[2], int index, char **argv);
+void send_command(FILE *f, int index, char **argv);
 
-/*
-- OK: e-mail expéditeur
-- OK: sujet du message (entre guillemets si multi-mots, cf bash)
-- OK: nom de fichier du corps du message
-- OK: nom de domaine DNS ou adresse IP du serveur de mail à utiliser
-- OK: e-mail destinataire
-- OK: argument optionnel: numéro de port (par défaut 25)
-*/
-
+/**
+ * Read the content of a file
+ * @param path The file path
+ */
 char *read_file(char *path) {
   char *buffer = 0;
   long length;
@@ -39,7 +38,13 @@ char *read_file(char *path) {
   return buffer;
 }
 
-int verify_error_code(char *buffer) {
+/**
+ * Parse the error code to get something that is easiest to treat in the main
+ * program
+ * @return An int that represent the error code (2xx 3xx 4xx 5xx 221 354 or 450)
+ * @param buffer The response from the server
+ */
+int parse_error_code(char *buffer) {
   char code[4];
   strncpy(code, buffer, 3);
   code[3] = 0;
@@ -50,13 +55,18 @@ int verify_error_code(char *buffer) {
 
   switch (error_subject) {
   case '2':
+    if (strcmp(code, "220") == 0)
+      return atoi(code);
+
     if (strcmp(code, "221") == 0)
       return atoi(code);
-    // printf("Success... (%s)\r\n", code);
+
+    if (strcmp(code, "250") == 0)
+      return atoi(code);
+
     return 2;
 
   case '3':
-    // printf("Waiting for more informations... (%s)\r\n", code);
     if (strcmp(code, "354") == 0)
       return atoi(code);
     return 3;
@@ -78,6 +88,13 @@ int verify_error_code(char *buffer) {
   }
 }
 
+/**
+ * Get the command pair, with the format and the variable in the correct order
+ * for the SMTP
+ * @param dest The destination variable
+ * @param index The index of the command
+ * @param argv The argv of the program
+ */
 void get_command(char *dest[2], int index, char **argv) {
   char *arg_exp = argv[1];
   char *arg_subject = argv[2];
@@ -136,17 +153,21 @@ int main(int argc, char **argv) {
 
       char buffer[1024] = "";
 
+      // Send the first command HELO me
       int commandIndex = 0;
       send_command(f, commandIndex, argv);
+
       while (fgets(buffer, sizeof(buffer), f)) {
         if (strlen(buffer) > 0) {
           buffer[strlen(buffer) - 1] = '\0';
         }
 
-        error = verify_error_code(buffer);
+        error = parse_error_code(buffer);
         int break_loop = 0;
 
         switch (error) {
+        // Treat DATA (354) and send all the command until we get the command
+        // "."
         case 354: {
           int is_not_dot = 1;
           while (is_not_dot) {
@@ -160,11 +181,15 @@ int main(int argc, char **argv) {
           break;
         }
 
-        case 2:
+        // Treat normal case with error code 250 or 220
+        case 220:
+        case 250:
           commandIndex++;
           send_command(f, commandIndex, argv);
           break;
 
+        // Break the loop for all these error code
+        // could only use default but I wanted it to be explicit
         case 221:
         case 450:
         case 4:
@@ -192,6 +217,9 @@ int main(int argc, char **argv) {
       if (error > 3) {
         result = EXIT_FAILURE;
 
+        // If we get a 450 error (Greylisted) we retry after 15 minutes
+        // by recalling main with the same arguments
+        // (and we return the result of the main recall)
         if (error == 450) {
           int minutes = 15;
           printf("we will retry in %d minutes...\r\n", minutes);

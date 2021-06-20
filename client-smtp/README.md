@@ -304,5 +304,14 @@ Se connecte à un serveur en TCP
 #### Retourne
 Il retourne un `FILE *` qui représente la connexion au serveur, on peut alors utiliser toutes les fonctions destinées aux fichiers afin d'envoyer et recevoir des informations avec le serveur
 
+## Fonctionnement du programme
+1. On se connecte au serveur indiqué dans les arguments du programme
+2. On envoie ligne par ligne (NVT, en attendant la réponse du serveur avant) notre "requête" SMTP
+   1. On traite la réponse pour obtenir un code d'erreur
+   2. On effectue les bonnes actions en fonction de ce code d'erreur (220, 250, 354, 221, 450).
+      1. **Si** on a un code **450** on réémet après 15 minutes pour le grey-listing
+      2. **Si** on a un code **221** on "close" la connexion
+      3. etc... (A voir dans le switch du code)
+3. On a la confirmation du serveur que l'email est bien envoyé on peut alors fermer proprement la connexion
 # Schéma de l'automate
 ![](images/automate.jpg)
